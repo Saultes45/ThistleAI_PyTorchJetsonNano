@@ -1,0 +1,48 @@
+from jetbot import Camera
+from jetbot import bgr8_to_jpeg
+from time import sleep
+
+image = widgets.Image(format='jpeg', width=300, height=300)
+camera = Camera.instance()
+camera_link = traitlets.dlink((camera, 'value'), (image, 'value'), transform=bgr8_to_jpeg)
+#display(camera_link)
+display(image)
+
+sleep(5)
+
+
+import time
+
+
+t0 = time.time()
+t1 = time.time()
+fps_widget = widgets.FloatText(description='fps')
+snapshot_image = widgets.Image(format='jpeg', width=300, height=300)
+
+
+display(widgets.VBox([fps_widget, snapshot_image]))
+
+def update(change):
+    global blocked_slider, robot, t0, t1
+    # display snapshot that was saved
+    snapshot_image.value = image.value
+    x = change['new'] 
+    
+    # update FPS widget
+    t1 = time.time()
+    fps_widget.value = 1.0 / (t1 - t0)
+    t0 = t1
+    return fps_widget.value
+
+fps = []
+for i in range(0,100):
+    fps.append(update({'new': camera.value}))  # we call the function once to intialize
+    
+    
+import matplotlib.pyplot as plt
+plt.plot(fps, label='FPS')
+plt.grid(True)
+plt.ylabel(r"FPS w/ image transfert [ms]")
+plt.xlabel(r"Epoch [N/A]")
+plt.legend(loc='upper left')
+plt.show()        
